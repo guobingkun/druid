@@ -704,6 +704,10 @@ public class IndexMaker
                   adapters.get(i).getRows(),
                   new Function<Rowboat, Rowboat>()
                   {
+                    /**
+                     * This is updating int[][] dims and Object[] metrics for the rowboat such that is has the
+                     * information of other indexes
+                     */
                     @Override
                     public Rowboat apply(Rowboat input)
                     {
@@ -1614,7 +1618,7 @@ public class IndexMaker
 
     MMappedIndexRowIterable(
         Iterable<Rowboat> index,
-        List<String> convertedDims,
+        List<String> convertedDims, // e.g. mergedDimensions
         Map<String, IntBuffer> converters,
         int indexNumber
     )

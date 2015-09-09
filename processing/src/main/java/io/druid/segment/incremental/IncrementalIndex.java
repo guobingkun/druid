@@ -504,6 +504,9 @@ public abstract class IncrementalIndex<AggregatorType> implements Iterable<Row>,
     return getFacts().lastKey().getTimestamp();
   }
 
+  /**
+   * Convert List<String> dimValues to array. Meanwhile it updates dimLookup
+   */
   private String[] getDimVals(final DimDim dimLookup, final List<String> dimValues)
   {
     final String[] retVal = new String[dimValues.size()];

@@ -196,9 +196,11 @@ public class IncrementalIndexAdapter implements IndexableAdapter
               )
               {
                 final IncrementalIndex.TimeAndDims timeAndDims = input.getKey();
+                // dimValues in current row
                 final String[][] dimValues = timeAndDims.getDims();
                 final int rowOffset = input.getValue();
 
+                // convert String[][] dimValues to int[][]
                 int[][] dims = new int[dimValues.length][];
                 for (String dimension : index.getDimensions()) {
                   int dimIndex = index.getDimensionIndex(dimension);

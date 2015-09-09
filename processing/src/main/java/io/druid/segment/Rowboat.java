@@ -32,7 +32,7 @@ import java.util.TreeSet;
 public class Rowboat implements Comparable<Rowboat>
 {
   private final long timestamp;
-  private final int[][] dims;
+  private final int[][] dims; // store indices
   private final Object[] metrics;
   private final int rowNum;
   private final Map<Integer, TreeSet<Integer>> comprisedRows;
