@@ -50,7 +50,7 @@ public interface GranularitySpec
    *
    * @param dt instant to return time interval for
    * @return optional time interval
-   * */
+   */
   public Optional<Interval> bucketInterval(DateTime dt);
 
   public Granularity getSegmentGranularity();

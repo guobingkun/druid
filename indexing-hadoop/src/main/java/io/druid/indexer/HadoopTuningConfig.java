@@ -85,6 +85,11 @@ public class HadoopTuningConfig implements TuningConfig
   private final float aggregationBufferRatio;
   private final boolean useCombiner;
 
+  public HadoopTuningConfig()
+  {
+    this(null, null, null, null, null, null, false, null, false, false, null, false, false, false, null, null, null);
+  }
+
   @JsonCreator
   public HadoopTuningConfig(
       final @JsonProperty("workingPath") String workingPath,

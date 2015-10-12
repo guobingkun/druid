@@ -77,6 +77,11 @@ public class IndexingServiceClient
     runQuery(new ClientAppendQuery(dataSource, segments));
   }
 
+  public void hadoopMergeSegments(String dataSource, Interval intervalToReindex)
+  {
+    runQuery(new ClientHadoopReindexQuery(dataSource, intervalToReindex));
+  }
+
   public void killSegments(String dataSource, Interval interval)
   {
     runQuery(new ClientKillQuery(dataSource, interval));
