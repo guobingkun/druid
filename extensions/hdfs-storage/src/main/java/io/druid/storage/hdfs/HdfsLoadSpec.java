@@ -22,14 +22,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Preconditions;
-import com.metamx.common.ISE;
-import io.druid.segment.loading.DataSegmentPuller;
 import io.druid.segment.loading.LoadSpec;
 import io.druid.segment.loading.SegmentLoadingException;
 import org.apache.hadoop.fs.Path;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  *
@@ -39,17 +36,21 @@ public class HdfsLoadSpec implements LoadSpec
 {
   private final Path path;
   final HdfsDataSegmentPuller puller;
+
   @JsonCreator
   public HdfsLoadSpec(
       @JacksonInject HdfsDataSegmentPuller puller,
       @JsonProperty(value = "path", required = true) String path
-  ){
+  )
+  {
     Preconditions.checkNotNull(path);
     this.path = new Path(path);
     this.puller = puller;
   }
+
   @JsonProperty("path")
-  public final String getPathString(){
+  public final String getPathString()
+  {
     return path.toString();
   }
 
