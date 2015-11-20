@@ -60,6 +60,7 @@ import io.druid.server.DruidNode;
 import io.druid.server.coordinator.helper.DruidCoordinatorBalancer;
 import io.druid.server.coordinator.helper.DruidCoordinatorCleanupOvershadowed;
 import io.druid.server.coordinator.helper.DruidCoordinatorCleanupUnneeded;
+import io.druid.server.coordinator.helper.DruidCoordinatorHadoopSegmentMerger;
 import io.druid.server.coordinator.helper.DruidCoordinatorHelper;
 import io.druid.server.coordinator.helper.DruidCoordinatorLogger;
 import io.druid.server.coordinator.helper.DruidCoordinatorRuleRunner;
@@ -654,27 +655,70 @@ public class DruidCoordinator
     if (config.isConvertSegments()) {
       helpers.add(new DruidCoordinatorVersionConverter(indexingServiceClient, whitelistRef));
     }
-    if (config.isMergeSegments()) {
-      helpers.add(new DruidCoordinatorSegmentMerger(indexingServiceClient, whitelistRef));
-      helpers.add(
-          new DruidCoordinatorHelper()
-          {
-            @Override
-            public DruidCoordinatorRuntimeParams run(DruidCoordinatorRuntimeParams params)
-            {
-              CoordinatorStats stats = params.getCoordinatorStats();
-              log.info("Issued merge requests for %s segments", stats.getGlobalStats().get("mergedCount").get());
 
-              params.getEmitter().emit(
-                  new ServiceMetricEvent.Builder().build(
-                      "coordinator/merge/count", stats.getGlobalStats().get("mergedCount")
-                  )
-              );
+    final String mergeStrategy = config.getMergeStrategy();
 
-              return params;
-            }
-          }
-      );
+    if (mergeStrategy != null) {
+
+      switch (mergeStrategy) {
+        case "append": {
+          log.info("Coordinator merge strategy is append");
+          helpers.add(new DruidCoordinatorSegmentMerger(indexingServiceClient, whitelistRef));
+          helpers.add(
+              new DruidCoordinatorHelper()
+              {
+                @Override
+                public DruidCoordinatorRuntimeParams run(DruidCoordinatorRuntimeParams params)
+                {
+                  CoordinatorStats stats = params.getCoordinatorStats();
+                  log.info("Issued merge requests for %s segments", stats.getGlobalStats().get("mergedCount").get());
+
+                  params.getEmitter().emit(
+                      new ServiceMetricEvent.Builder().build(
+                          "coordinator/merge/count", stats.getGlobalStats().get("mergedCount")
+                      )
+                  );
+
+                  return params;
+                }
+              }
+          );
+          break;
+        }
+        case "hadoop": {
+          log.info("Coordinator merge strategy is hadoop");
+          helpers.add(
+              new DruidCoordinatorHadoopSegmentMerger(
+                  indexingServiceClient,
+                  whitelistRef,
+                  true
+              )
+          );
+          helpers.add(
+              new DruidCoordinatorHelper()
+              {
+                @Override
+                public DruidCoordinatorRuntimeParams run(DruidCoordinatorRuntimeParams params)
+                {
+                  CoordinatorStats stats = params.getCoordinatorStats();
+                  log.info("Issued merge requests for [%s] dataSource", stats.getGlobalStats().get("hadoopMergeCount").get());
+
+                  params.getEmitter().emit(
+                      new ServiceMetricEvent.Builder().build(
+                          "coordinator/hadoopMerge/count", stats.getGlobalStats().get("hadoopMergeCount")
+                      )
+                  );
+
+                  return params;
+                }
+              }
+          );
+          break;
+        }
+        default:
+          log.warn("Unknown merge strategy [%s] set at druid.coordinator.merge.strategy", mergeStrategy);
+          break;
+      }
     }
 
     if (config.isKillSegments()) {
