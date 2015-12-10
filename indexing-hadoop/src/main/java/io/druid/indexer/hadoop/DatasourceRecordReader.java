@@ -96,6 +96,8 @@ public class DatasourceRecordReader extends RecordReader<NullWritable, InputRow>
 
               return new WindowedStorageAdapter(
                   new QueryableIndexStorageAdapter(index),
+                  // this segment interval is not same as the "interval" segment's interval
+                  // this is the interval returned from timeline
                   segment.getInterval()
               );
             }
