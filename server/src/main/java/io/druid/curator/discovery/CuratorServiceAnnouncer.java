@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.metamx.emitter.EmittingLogger;
 import io.druid.server.DruidNode;
+import io.druid.server.coordination.DruidServerMetadata;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceInstance;
 
@@ -36,13 +37,13 @@ public class CuratorServiceAnnouncer implements ServiceAnnouncer
 {
   private static final EmittingLogger log = new EmittingLogger(CuratorServiceAnnouncer.class);
 
-  private final ServiceDiscovery<Void> discovery;
-  private final Map<String, ServiceInstance<Void>> instanceMap = Maps.newHashMap();
+  private final ServiceDiscovery<DruidServerMetadata> discovery;
+  private final Map<String, ServiceInstance<DruidServerMetadata>> instanceMap = Maps.newHashMap();
   private final Object monitor = new Object();
 
   @Inject
   public CuratorServiceAnnouncer(
-      ServiceDiscovery<Void> discovery
+      ServiceDiscovery<DruidServerMetadata> discovery
   )
   {
     this.discovery = discovery;
@@ -53,17 +54,25 @@ public class CuratorServiceAnnouncer implements ServiceAnnouncer
   {
     final String serviceName = CuratorServiceUtils.makeCanonicalServiceName(service.getServiceName());
 
-    final ServiceInstance<Void> instance;
+    final ServiceInstance<DruidServerMetadata> instance;
     synchronized (monitor) {
       if (instanceMap.containsKey(serviceName)) {
         log.warn("Ignoring request to announce service[%s]", service);
         return;
       } else {
         try {
-          instance = ServiceInstance.<Void>builder()
+          instance = ServiceInstance.<DruidServerMetadata>builder()
                                     .name(serviceName)
                                     .address(service.getHost())
                                     .port(service.getPort())
+                                    .payload(new DruidServerMetadata(
+                                        "dummy",
+                                        "dummy_host",
+                                        0,
+                                        "historical",
+                                        "dummy_tier",
+                                        0
+                                    ))
                                     .build();
         }
         catch (Exception e) {
@@ -90,7 +99,7 @@ public class CuratorServiceAnnouncer implements ServiceAnnouncer
   public void unannounce(DruidNode service)
   {
     final String serviceName = CuratorServiceUtils.makeCanonicalServiceName(service.getServiceName());
-    final ServiceInstance<Void> instance;
+    final ServiceInstance<DruidServerMetadata> instance;
 
     synchronized (monitor) {
       instance = instanceMap.get(serviceName);

@@ -20,6 +20,7 @@
 package io.druid.curator.discovery;
 
 import com.google.inject.Inject;
+import io.druid.server.coordination.DruidServerMetadata;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.ServiceProvider;
@@ -31,11 +32,11 @@ import java.util.Collection;
  */
 public class ServerDiscoveryFactory
 {
-  private final ServiceDiscovery<Void> serviceDiscovery;
+  private final ServiceDiscovery<DruidServerMetadata> serviceDiscovery;
 
   @Inject
   public ServerDiscoveryFactory(
-      ServiceDiscovery<Void> serviceDiscovery
+      ServiceDiscovery<DruidServerMetadata> serviceDiscovery
   )
   {
     this.serviceDiscovery = serviceDiscovery;

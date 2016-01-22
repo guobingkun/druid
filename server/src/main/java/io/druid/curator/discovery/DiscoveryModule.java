@@ -19,6 +19,7 @@
 
 package io.druid.curator.discovery;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -36,7 +37,9 @@ import io.druid.guice.JsonConfigProvider;
 import io.druid.guice.KeyHolder;
 import io.druid.guice.LazySingleton;
 import io.druid.guice.LifecycleModule;
+import io.druid.jackson.DefaultObjectMapper;
 import io.druid.server.DruidNode;
+import io.druid.server.coordination.DruidServerMetadata;
 import io.druid.server.initialization.CuratorDiscoveryConfig;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.CloseableExecutorService;
@@ -194,7 +197,7 @@ public class DiscoveryModule implements Module
 
   @Provides
   @LazySingleton
-  public ServiceDiscovery<Void> getServiceDiscovery(
+  public ServiceDiscovery<DruidServerMetadata> getServiceDiscovery(
       CuratorFramework curator,
       CuratorDiscoveryConfig config,
       Lifecycle lifecycle
@@ -204,8 +207,8 @@ public class DiscoveryModule implements Module
       return new NoopServiceDiscovery<>();
     }
 
-    final ServiceDiscovery<Void> serviceDiscovery =
-        ServiceDiscoveryBuilder.builder(Void.class)
+    final ServiceDiscovery<DruidServerMetadata> serviceDiscovery =
+        ServiceDiscoveryBuilder.builder(DruidServerMetadata.class)
                                .basePath(config.getPath())
                                .client(curator)
                                .build();
@@ -238,7 +241,7 @@ public class DiscoveryModule implements Module
   @Provides
   @LazySingleton
   public ServerDiscoveryFactory getServerDiscoveryFactory(
-      ServiceDiscovery<Void> serviceDiscovery
+      ServiceDiscovery<DruidServerMetadata> serviceDiscovery
   )
   {
     return new ServerDiscoveryFactory(serviceDiscovery);
@@ -448,5 +451,14 @@ public class DiscoveryModule implements Module
     {
 
     }
+  }
+
+  public static void main(String[] args) throws IOException
+  {
+    ObjectMapper mapper = new DefaultObjectMapper();
+    System.out.println(mapper.writeValueAsString(mapper.readValue(
+        "{\"@class\":\"io.druid.server.coordination.DruidServerMetadata\",\"name\":\"dummy\",\"host\":\"dummy_host\",\"maxSize\":0,\"tier\":\"dummy_tier\",\"priority\":0,\"serverType\":\"historical\",\"assignable\":true}",
+        DruidServerMetadata.class
+    )));
   }
 }
