@@ -31,5 +31,5 @@ The format of the result is:
   "result" : {
     "maxIngestedEventTime" : "2013-05-09T18:24:09.007Z",
   }
-} ]
+]
 ```
