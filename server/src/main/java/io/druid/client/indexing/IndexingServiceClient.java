@@ -159,7 +159,7 @@ public class IndexingServiceClient
       );
     }
     catch (IOException e) {
-      log.warn("Error parsing response for incompleteTasks query from Overlord [%s]", baseUrl());
+      log.warn(e, "Error parsing response for incompleteTasks query from Overlord [%s]", baseUrl());
       return null;
     }
   }
